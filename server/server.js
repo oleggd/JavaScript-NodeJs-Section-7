@@ -27,24 +27,17 @@ app.listen(3000, ()=>{
     console.log('Server started on port 3000');
 });
 
-
+module.exports = {app};
 
 // var newTodo = new Todo ({
-//     text: 'Learn lessons',
-//     completed: false,
-//     completedAt: 10
+//     text : ''
 // });
 
-// var newUser = new User ({
-//     name : 'newUser',
-//     email : 'newuser1@test.com'
-// });
-
-// newTodo.save().then((doc)=>{
-//     console.log('Save todo', doc);
-// }, (e) => {
-//     console.log('Unable to save todo');
-// });
+//  newTodo.save().then((doc)=>{
+//      console.log('Save todo', doc);
+//  }, (e) => {
+//      console.log('Unable to save todo');
+//  });
 
 // newUser.save().then((doc)=>{
 //     console.log('Save user', doc);
@@ -53,3 +46,4 @@ app.listen(3000, ()=>{
 //     }
 
 // )
+
