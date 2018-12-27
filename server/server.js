@@ -48,27 +48,26 @@ app.get('/todos/:id', (req, res) => {
     });
 });
 
+app.delete('/todos/:id', (req,res)=> {
+    var id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Todo.findByIdAndRemove(id).then((todo)=>{
+        if (todo) {
+            res.send({todo});
+        } else {
+            res.status(404).send();
+        }
+    }, (err) => {
+        res.status(400).send();
+    });
+});
+
 app.listen(port, ()=>{
     console.log(`Server started at port ${port}`);
 });
 
 module.exports = {app};
-
-// var newTodo = new Todo ({
-//     text : ''
-// });
-
-//  newTodo.save().then((doc)=>{
-//      console.log('Save todo', doc);
-//  }, (e) => {
-//      console.log('Unable to save todo');
-//  });
-
-// newUser.save().then((doc)=>{
-//     console.log('Save user', doc);
-//     }, (e) => {
-//         console.log('Unable to save User',e);
-//     }
-
-// )
-
