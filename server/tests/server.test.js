@@ -1,11 +1,11 @@
 const expect = require('expect');
 const request = require('supertest');
-const {ObjectID} = require('mongodb');
+const { ObjectID } = require('mongodb');
 
-const {app} = require('./../server');
-const {Todo} = require('./../models/todo');
-const {User} = require('./../models/user');
-const {todos, populateTodos, users, populateUsers} = require('./seed/seed');
+const { app } = require('./../server');
+const { Todo } = require('./../models/todo');
+const { User } = require('./../models/user');
+const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
 
 beforeEach(populateUsers);
 beforeEach(populateTodos);
@@ -13,7 +13,7 @@ beforeEach(populateTodos);
 describe('POST /todos', () => {
     it('should create a new todo', (done) => {
         var text = 'Test todo text';
-        
+
         request(app)
             .post('/todos')
             .send({ text })
@@ -52,24 +52,24 @@ describe('POST /todos', () => {
     });
 });
 
-describe('GET /todos', ()=> {
-    it('should get all todos', (done)=> {
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
         request(app)
             .get('/todos')
             .expect(200)
-            .expect((res)=>{
+            .expect((res) => {
                 expect(res.body.todos.length).toBe(2);
             })
             .end(done);
     });
 });
 
-describe('GET /todos/:id', ()=> {
-    it('should return todo doc', (done)=>{
+describe('GET /todos/:id', () => {
+    it('should return todo doc', (done) => {
         request(app)
             .get(`/todos/${todos[0]._id.toHexString()}`)
             .expect(200)
-            .expect((res)=>{
+            .expect((res) => {
                 expect(res.body.todo.text).toBe(todos[0].text);
             })
             .end(done)
@@ -84,7 +84,7 @@ describe('GET /todos/:id', ()=> {
     });
 
     it('should return 404 for non-object id', (done) => {
-        
+
         request(app)
             .get(`/todos/222`)
             .expect(404)
@@ -214,15 +214,13 @@ describe('POST /users', () => {
                 if (err) {
                     return done(err);
                 }
-                 User.findOne({email}).then((user) => {
-                     expect(user).toExist;
-                     //console.log('user.password : '+ user.password);
-                     //console.log('password : '+ password);
-                     expect(user.password).not.toBe(password, 'Test check');
-                     done();
-                 }).catch((err)=>{
-                     done(err);
-                 });
+                User.findOne({ email }).then((user) => {
+                    expect(user).toExist;
+                    //console.log('user.password : '+ user.password);
+                    //console.log('password : '+ password);
+                    expect(user.password).not.toBe(password, 'Test check');
+                    done();
+                }).catch((err) => done(err));
             });
     });
 
@@ -243,11 +241,60 @@ describe('POST /users', () => {
 
         request(app)
             .post('/users')
-            .send({ 
-                email : users[0].email, 
-                password: users[0].password 
+            .send({
+                email: users[0].email,
+                password: users[0].password
             })
             .expect(400)
-            .end(done); 
+            .end(done);
+    });
+});
+
+describe('POST /users/login', () => {
+    it('should login user and return a token', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toExist;
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens[0]).toMatchObject({
+                        access: 'auth',
+                        token: res.headers['x-auth']
+                    });
+                    done();
+                }).catch((err) => done(err));
+            });
+    });
+
+    it('should reject invalid login', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password +'1'
+            })
+            .expect(400)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toNotExist;
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch((err) => done(err));
+            });
     });
 });
