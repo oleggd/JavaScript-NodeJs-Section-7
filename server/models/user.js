@@ -33,11 +33,12 @@ var UserSchema = new mongoose.Schema({
     }]
 
 });
-UserSchema.methods.toJSON = function (){
+
+UserSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
 
-    return _.pick(userObject, ['_id','email']);
+    return _.pick(userObject, ['_id', 'email']);
 };
 
 UserSchema.methods.generateAuthToken = function () {
@@ -52,23 +53,30 @@ UserSchema.methods.generateAuthToken = function () {
     });
 };
 
+UserSchema.methods.removeToken = function (token) {
+    var user = this;
+    return user.update({
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    });
+};
+
 UserSchema.statics.findByToken = function (token) {
     var User = this;
     var decoded;
 
     try {
         decoded = jwt.verify(token, 'bcd223');
-        //console.log('decoded',decoded);
     } catch (err) {
-        // return new Promise((resolve, reject) => {
-        //     reject();
-        // });
-        return Promise.reject('Error : '+ err);
+        return Promise.reject('Error : ' + err);
     };
     return User.findOne({
-        '_id' : decoded._id,
-        'tokens.token' : token,
-        'tokens.access' : 'auth'
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
     });
 };
 
