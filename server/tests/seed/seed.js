@@ -17,28 +17,34 @@ const users = [{
     }]
 }, {_id : userTwoId,
     email : 'test32@test.com',
-    password : 'userTwoPass'
+    password : 'userTwoPass',
+    tokens : [{
+        access : 'auth',
+        token : jwt.sign({_id : userTwoId, access : 'auth'},'bcd223').toString()
+    }]
 }];
 
 const todos = [{
     _id  : new ObjectID(),
-    text : 'First test todo'
+    text : 'First test todo',
+    _creator : userOneId
     }, {
     _id  : new ObjectID(),
     text : 'Second test todo',
     completed : true,
-    completedAt : 1111
+    completedAt : 1111,
+    _creator : userTwoId
 }];
 
 
 const populateTodos = (done)=> {
-    Todo.remove({}).then(()=> {
+    Todo.deleteMany({}).then(()=> {
         return Todo.insertMany(todos);
     }).then(()=>done());
 };
 
 const populateUsers = (done) => {
-    User.remove({}).then(() => {
+    User.deleteMany({}).then(() => {
         var userOne = new User(users[0]).save();
         var userTwo = new User(users[1]).save();
 
